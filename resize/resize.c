@@ -14,10 +14,18 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // converts 'n' which is the resizer into an integer
+    int resize = atoi(argv[1]);
     // remember filenames
     char *infile = argv[1];
     char *outfile = argv[2];
 
+ // resize must be positive and should be less then or equal to 100
+ if(resize <= 100)
+    {
+        fprintf(stderr, "Resize must be in the range of [1 - 100]\n");
+        return 1;
+    }
     // open input file
     FILE *inptr = fopen(infile, "r");
     if (inptr == NULL)
