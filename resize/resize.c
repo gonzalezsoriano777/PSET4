@@ -15,13 +15,13 @@ int main(int argc, char *argv[])
     }
 
     // converts 'n' which is the resizer into an integer
-    int resize = atoi(argv[1]);
+    int n = atoi(argv[1]);
     // remember filenames
     char *infile = argv[1];
     char *outfile = argv[2];
 
  // resize must be positive and should be less then or equal to 100
- if(resize <= 100)
+ if(n <= 100)
     {
         fprintf(stderr, "Resize must be in the range of [1 - 100]\n");
         return 1;
@@ -47,11 +47,30 @@ int main(int argc, char *argv[])
     BITMAPFILEHEADER bf;
     fread(&bf, sizeof(BITMAPFILEHEADER), 1, inptr);
 
+
     // read infile's BITMAPINFOHEADER
     BITMAPINFOHEADER bi;
     fread(&bi, sizeof(BITMAPINFOHEADER), 1, inptr);
 
-    // ensure infile is (likely) a 24-bit uncompressed BMP 4.0
+   // creates new infiles for both BitmapFile and Info
+   BITMAPFILEHEADER out_Bfh = bf;
+   BITMAPINFOHEADER out_Bih = bi;
+
+// Times the width and height of the small.bmp based on the number put for n (this goes for both Width and Height)
+// changes size of bitmap Horizontally and Vertically by n
+out_Bih.biWidth = bi.biWidth * n;
+out_Bih.biHeight = bi.biHeight * n;
+
+ int outPadding = (4 - (out_Bih.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
+
+    // Overall grabbing the Sizeimage (in pixels) using the RGBTRIPLE and adding the outfile of BitmapInfo and padding
+    // Computing the absolute value of biHeight for the outfile
+    out_Bih.biSizeImage = ((sizeof(RGBTRIPLE) * out_Bih.biWidth) + outPadding) * abs(out_Bih.biHeight);
+
+
+
+// ensure infile is (likely) a 24-bit uncompressed BMP 4.0
+
     if (bf.bfType != 0x4d42 || bf.bfOffBits != 54 || bi.biSize != 40 ||
         bi.biBitCount != 24 || bi.biCompression != 0)
     {
@@ -64,11 +83,13 @@ int main(int argc, char *argv[])
     // write outfile's BITMAPFILEHEADER
     fwrite(&bf, sizeof(BITMAPFILEHEADER), 1, outptr);
 
+
     // write outfile's BITMAPINFOHEADER
     fwrite(&bi, sizeof(BITMAPINFOHEADER), 1, outptr);
 
     // determine padding for scanlines
     int padding = (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
+
 
     // iterate over infile's scanlines
     for (int i = 0, biHeight = abs(bi.biHeight); i < biHeight; i++)
