@@ -14,10 +14,10 @@ int main(int argc, char *argv[])
     }
 
     // converts 'n' which is the resizer into an integer
-    int n = atoi(argv[2]);
+    int n = atoi(argv[1]);
     // remember filenames
-    char *infile = argv[3];
-    char *outfile = argv[4];
+    char *infile = argv[2];
+    char *outfile = argv[3];
 
     // resize must be positive and should be less then or equal to 100
     if(n < 0 || n > 100)
