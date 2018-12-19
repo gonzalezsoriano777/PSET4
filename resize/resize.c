@@ -1,5 +1,4 @@
 // Copies a BMP file .. for Resize of bitmap files
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -8,24 +7,27 @@
 int main(int argc, char *argv[])
 {
     // ensure proper usage
-    if (argc != 3)
+    if (argc != 4)
     {
         fprintf(stderr, "Usage: copy infile outfile\n");
         return 1;
     }
 
     // converts 'n' which is the resizer into an integer
-    int n = atoi(argv[1]);
+    int n = atoi(argv[2]);
     // remember filenames
-    char *infile = argv[1];
-    char *outfile = argv[2];
+    char *infile = argv[3];
+    char *outfile = argv[4];
 
- // resize must be positive and should be less then or equal to 100
- if(n <= 100)
+    // resize must be positive and should be less then or equal to 100
+    if(n < 0 || n > 100)
     {
         fprintf(stderr, "Resize must be in the range of [1 - 100]\n");
         return 1;
     }
+
+
+
     // open input file
     FILE *inptr = fopen(infile, "r");
     if (inptr == NULL)
@@ -52,21 +54,23 @@ int main(int argc, char *argv[])
     BITMAPINFOHEADER bi;
     fread(&bi, sizeof(BITMAPINFOHEADER), 1, inptr);
 
-   // creates new infiles for both BitmapFile and Info
-   BITMAPFILEHEADER out_Bfh = bf;
-   BITMAPINFOHEADER out_Bih = bi;
+    // creates new infiles for BitmapInfo
+    // Used to rescale the width and height for the bitmap
+    BITMAPINFOHEADER Bih;
 
-// Times the width and height of the small.bmp based on the number put for n (this goes for both Width and Height)
-// changes size of bitmap Horizontally and Vertically by n
-out_Bih.biWidth = bi.biWidth * n;
-out_Bih.biHeight = bi.biHeight * n;
+    // Times the width and height of the small.bmp based on the number put for n (this goes for both Width and Height)
+    // changes size of bitmap Horizontally and Vertically by n
+    Bih.biWidth = bi.biWidth * n;
+    Bih.biHeight = bi.biHeight * n;
 
- int outPadding = (4 - (out_Bih.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
+    printf("width: %i height: %i\n", Bih.biWidth, Bih.biHeight);
 
-    // Overall grabbing the Sizeimage (in pixels) using the RGBTRIPLE and adding the outfile of BitmapInfo and padding
-    // Computing the absolute value of biHeight for the outfile
-    out_Bih.biSizeImage = ((sizeof(RGBTRIPLE) * out_Bih.biWidth) + outPadding) * abs(out_Bih.biHeight);
+    int outPadding = (4 - (Bih.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
 
+    //   Overall grabbing the Sizeimage (in pixels) using the RGBTRIPLE and adding the outfile of BitmapInfo and padding
+    //   Computing the absolute value of biHeight for the outfile
+    Bih.biSizeImage = ((sizeof(RGBTRIPLE) * Bih.biWidth) + outPadding) * abs(Bih.biHeight);
+    bf.bfSize = bi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
 
 
 // ensure infile is (likely) a 24-bit uncompressed BMP 4.0
