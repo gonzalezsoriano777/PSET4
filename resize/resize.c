@@ -98,34 +98,61 @@ int main(int argc, char *argv[])
     int padding = (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
 
 
+
+    // temporary storage
+    RGBTRIPLE triple;
+
+
     // iterate over infile's scanlines
     for (int i = 0, biHeight = abs(bi.biHeight); i < biHeight; i++)
     {
+        // each row will be printed out n times
+        int rowcounter = 0;
+
+        while(rowcounter < n)
+        {
+
         // iterate over pixels in scanline
         for (int j = 0; j < bi.biWidth; j++)
         {
-            // temporary storage
-            RGBTRIPLE triple;
 
-            // read RGB triple from infile
-            fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
 
-            // write RGB triple to outfile
-            fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
+                // printf("%i\n", j);
 
-            RGBTRIPLE *solution[triple] *= Bih.biWidth;
+                // each pixel will be printed out n times
+                int pixelCounter = 0;
 
+               // read RGB triple from infile
+               fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
+
+                while(pixelCounter < n)
+                {
+                   // write RGB triple to outfile
+                   fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
+                   pixelCounter++;
+                }
         }
 
-        // skip over padding, if any
-        fseek(inptr, padding, SEEK_CUR);
 
-        // then add it back (to demonstrate how)
-        for (int k = 0; k < padding; k++)
-        {
+        // add new padding
+        for (int k = 0; k < outPadding; k++)
+
             fputc(0x00, outptr);
+
+            if(rowcounter < (n - 1))
+
+                 fseek(inptr, -(Bih.biWidth * sizeof(RGBTRIPLE)), SEEK_CUR);
+                 rowcounter++;
+
+
         }
+
+    // skip over padding, if any
+    fseek(inptr, padding, SEEK_CUR);
+
     }
+
+
 
     // Empty space to store memory in which is the value of the address of solution
     // realloc(solution);
