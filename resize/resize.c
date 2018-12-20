@@ -51,17 +51,17 @@ int main(int argc, char *argv[])
 
 
     // read infile's BITMAPINFOHEADER
-    BITMAPINFOHEADER bi;
+    BITMAPINFOHEADER bi, Bih;
     fread(&bi, sizeof(BITMAPINFOHEADER), 1, inptr);
 
     // creates new infiles for BitmapInfo
     // Used to rescale the width and height for the bitmap
-    BITMAPINFOHEADER Bih;
+
 
     // Times the width and height of the small.bmp based on the number put for n (this goes for both Width and Height)
     // changes size of bitmap Horizontally and Vertically by n
     Bih.biWidth = bi.biWidth * n;
-    Bih.biHeight = bi.biHeight * n;
+    Bih.biHeight = abs(bi.biHeight) * n;
 
     printf("width: %i height: %i\n", Bih.biWidth, Bih.biHeight);
 
@@ -70,7 +70,9 @@ int main(int argc, char *argv[])
     //   Overall grabbing the Sizeimage (in pixels) using the RGBTRIPLE and adding the outfile of BitmapInfo and padding
     //   Computing the absolute value of biHeight for the outfile
     Bih.biSizeImage = ((sizeof(RGBTRIPLE) * Bih.biWidth) + outPadding) * abs(Bih.biHeight);
-    bf.bfSize = bi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+    bf.bfSize = Bih.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+
+    printf("%i %i\n", Bih.biSizeImage, bf.bfSize);
 
 
 // ensure infile is (likely) a 24-bit uncompressed BMP 4.0
@@ -91,6 +93,7 @@ int main(int argc, char *argv[])
     // write outfile's BITMAPINFOHEADER
     fwrite(&bi, sizeof(BITMAPINFOHEADER), 1, outptr);
 
+
     // determine padding for scanlines
     int padding = (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
 
@@ -109,6 +112,9 @@ int main(int argc, char *argv[])
 
             // write RGB triple to outfile
             fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
+
+            RGBTRIPLE *solution[triple] *= Bih.biWidth;
+
         }
 
         // skip over padding, if any
@@ -120,6 +126,9 @@ int main(int argc, char *argv[])
             fputc(0x00, outptr);
         }
     }
+
+    // Empty space to store memory in which is the value of the address of solution
+    // realloc(solution);
 
     // close infile
     fclose(inptr);
